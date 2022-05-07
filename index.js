@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 require("dotenv").config();
 
@@ -48,7 +48,7 @@ async function run() {
       const result = await phoneCollection.insertOne(book);
       res.send({
         success: true,
-        message: `successfully added ${book.bookname}`,
+        message: `successfully added ${book.name}`,
       });
     });
 
@@ -59,26 +59,12 @@ async function run() {
       console.log(page, size);
       const querry = {};
       const cursor = phoneCollection.find(querry);
-      const result = await cursor.skip(page*size).limit(size).toArray();
+      const result = await cursor
+        .skip(page * size)
+        .limit(size)
+        .toArray();
       res.send({ success: true, data: result });
     });
-
-    /* app.get("/products", async (req, res) => {
-      const limit = Number(req.query.limit);
-      const page = req.query.pageNumber;
-      console.log(page);
-      const query = {};
-      const cursor = phoneCollection.find(query);
-      const result = await cursor
-        .skip(limit * page)
-        .limit(limit)
-        .toArray();
-      if (!result?.length) {
-        return res.send({ success: false, error: "no data here" });
-      }
-
-      res.send({ success: true, data: result });
-    }); */
 
     //get count
     app.get("/productCount", async (req, res) => {
@@ -87,6 +73,47 @@ async function run() {
       const count = await curser.count();
       res.send({ count });
     });
+
+    //delte
+
+    app.delete("/books/:id", async (req, res) => {
+      const id = req.params.id;
+      const querry = { _id: ObjectId(id) };
+      const result = await phoneCollection.deleteOne(querry);
+      res.send(result);
+    });
+
+    //update
+
+    app.get("/books/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await phoneCollection.findOne(query);
+      res.send(result);
+    });
+
+    //put
+
+    app.put('/books/:id', async(req, res) => {
+      const id = req.params.id;
+      const updateUser = req.body;
+      const filter = { _id: ObjectId(id) };
+      const options = {upsert: true};
+      const updateDoc = {
+        $set: {
+          name: updateUser.name,
+          seller: updateUser.seller,
+          discription: updateUser.discription,
+          Price: updateUser.Price,
+          quantity: updateUser.quantity,
+          img: updateUser.img,
+        }
+      };
+      const result = await phoneCollection.updateOne(filter, updateDoc, options);
+      res.send(result);
+    })
+
+    //update
   } finally {
     // await client.close();
   }
