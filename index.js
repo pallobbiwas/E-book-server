@@ -39,19 +39,31 @@ async function run() {
 
     app.post("/books", async (req, res) => {
       const book = req.body;
-      if (!book?.bookname || !book?.imgUrl || !book?.Price) {
+      if (!book?.name || !book?.img || !book?.Price) {
         return res.send({
           success: false,
           error: "please fillup all require",
         });
       }
       const result = await phoneCollection.insertOne(book);
-      res.send({ success: true, message: `successfully added ${book.bookname}` });
+      res.send({
+        success: true,
+        message: `successfully added ${book.bookname}`,
+      });
     });
 
     //get api
+    app.get("/books", async (req, res) => {
+      const page = Number(req.query.page);
+      const size = Number(req.query.size);
+      console.log(page, size);
+      const querry = {};
+      const cursor = phoneCollection.find(querry);
+      const result = await cursor.skip(page*size).limit(size).toArray();
+      res.send({ success: true, data: result });
+    });
 
-    app.get("/products", async (req, res) => {
+    /* app.get("/products", async (req, res) => {
       const limit = Number(req.query.limit);
       const page = req.query.pageNumber;
       console.log(page);
@@ -66,6 +78,14 @@ async function run() {
       }
 
       res.send({ success: true, data: result });
+    }); */
+
+    //get count
+    app.get("/productCount", async (req, res) => {
+      const query = {};
+      const curser = phoneCollection.find(query);
+      const count = await curser.count();
+      res.send({ count });
     });
   } finally {
     // await client.close();
