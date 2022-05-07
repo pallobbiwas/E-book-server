@@ -37,30 +37,30 @@ async function run() {
 
     //post api
 
-    app.post("/products", async (req, res) => {
-      const product = req.body;
-      if (!product.name || !product.price) {
+    app.post("/books", async (req, res) => {
+      const book = req.body;
+      if (!book?.bookname || !book?.imgUrl || !book?.Price) {
         return res.send({
           success: false,
-          error: "please provide all information",
+          error: "please fillup all require",
         });
       }
-      const result = await phoneCollection.insertOne(product);
-      res.send({
-        success: true,
-        message: `successfully added ${product.name}`,
-      });
+      const result = await phoneCollection.insertOne(book);
+      res.send({ success: true, message: `successfully added ${book.bookname}` });
     });
 
-    //gett
+    //get api
 
     app.get("/products", async (req, res) => {
       const limit = Number(req.query.limit);
       const page = req.query.pageNumber;
-      console.log( page);
+      console.log(page);
       const query = {};
       const cursor = phoneCollection.find(query);
-      const result = await cursor.skip(limit * page).limit(limit).toArray();
+      const result = await cursor
+        .skip(limit * page)
+        .limit(limit)
+        .toArray();
       if (!result?.length) {
         return res.send({ success: false, error: "no data here" });
       }
