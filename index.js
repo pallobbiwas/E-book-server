@@ -30,10 +30,39 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
+//for order
+
+async function orders() {
+  try {
+    await client.connect();
+    const orderCollection = client.db("phoneData").collection("orders");
+
+    //post
+    app.post("/order", async (req, res) => {
+      const orders = req.body;
+      const result = await orderCollection.insertOne(orders);
+      res.send(result);
+    });
+  } finally {
+    // await client.close();
+  }
+}
+
+orders().catch(console.dir);
+
 async function run() {
   try {
     await client.connect();
     const phoneCollection = client.db("phoneData").collection("phone");
+
+    //add order
+
+  /*   app.post("/order", async (req, res) => {
+      const orders = req.body;
+      console.log(orders);
+      const result = await phoneCollection.insertOne(orders);
+      res.send(result);
+    }); */
 
     //post api
 
@@ -94,11 +123,11 @@ async function run() {
 
     //put
 
-    app.put('/books/:id', async(req, res) => {
+    app.put("/books/:id", async (req, res) => {
       const id = req.params.id;
       const updateUser = req.body;
       const filter = { _id: ObjectId(id) };
-      const options = {upsert: true};
+      const options = { upsert: true };
       const updateDoc = {
         $set: {
           name: updateUser.name,
@@ -107,11 +136,15 @@ async function run() {
           Price: updateUser.Price,
           quantity: updateUser.quantity,
           img: updateUser.img,
-        }
+        },
       };
-      const result = await phoneCollection.updateOne(filter, updateDoc, options);
+      const result = await phoneCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
       res.send(result);
-    })
+    });
 
     //update
   } finally {
